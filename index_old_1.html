@@ -1,0 +1,353 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+    <!-- <script src="http://d3js.org/d3.v2.min.js" charset="utf-8"></script> -->
+    <!-- <link type="text/css" rel="stylesheet" href="style.css"/> -->
+    <style type="text/css">
+
+
+
+.chart .legend {
+  fill: black;
+  font: 14px sans-serif;
+  text-anchor: start;
+  font-size: 12px;
+}
+
+.chart text {
+  fill: white;
+  font: 10px sans-serif;
+  text-anchor: end;
+}
+
+.chart .label {
+  fill: black;
+  font: 14px sans-serif;
+  text-anchor: end;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+#states path {
+  fill: #ccc;
+  stroke: #fff;
+}
+
+path.arc {
+  pointer-events: none;
+  fill: none;
+  stroke: #000;
+  display: none;
+}
+
+path.cell {
+  fill: none;
+  pointer-events: all;
+}
+
+circle {
+  fill: steelblue;
+  fill-opacity: .8;
+  stroke: #fff;
+
+}
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-width: .001px;
+  stroke-opacity: .5;
+}
+
+.land {
+  fill: #ccc;
+}
+
+/*.g {
+  fill: none;
+  stroke: #fff;
+  stroke-width: .5px;
+}*/
+
+.state-boundary {
+  fill: none;
+  stroke: #fff;
+}
+
+
+
+#cells.voronoi path.cell {
+  stroke: brown;
+}
+
+#cells g:hover path.arc {
+  display: inherit;
+}
+
+    </style>
+  </head>
+  <body>
+    <h1>   
+     <div> <div style="position:absolute;left: 400px;:0">
+      Flights Map - Virginia, January 2015 
+    </h1>
+    <h2>
+      <div> <div style="position:absolute;bottom: 100px;left: 200px;:0;">
+      <span>Airport</span>
+    </h2>
+      <div> <div style="position:absolute;right: 400px;:0;">
+  <!--     <h3>
+      <span>Chart</span>
+    </h3> -->
+    </div>
+    <div style="position:absolute;bottom:130px;font-size:18px;">
+      <input type="checkbox" id="voronoi"> <label for="voronoi">Voronoi</label>
+      </div>
+
+
+<!--    <div> <div style="position:absolute;top: 100px;right: 150px;:0;">
+   <svg class="chart"></svg>
+    </div> -->
+
+    <script type="text/javascript">
+
+var w = 1280,
+    h = 800;
+
+var origin = [-98, 38];
+
+var projection = d3.geo.albers()
+    .rotate([96, 0])
+    .center([-.6, 38.7])
+    .parallels([29.5, 45.5])
+    .scale(1250)
+    .translate([w / 2 - 100, h / 2 - 100])
+    .precision(.1);
+
+var path = d3.geo.path()
+    .projection(projection);
+
+var graticule = d3.geo.graticule()
+    .extent([[-98 - 45, 38 - 45], [-98 + 45, 38 + 45]])
+    .step([5, 5]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+
+d3.json("us.json", function(error, us) {
+  if (error) throw error;
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.feature(us, us.objects.land))
+      .attr("class", "land")
+      .attr("d", path);
+
+  // svg.insert("path", ".graticule")
+  //     .datum(topojson.mesh(us, us.objects.counties, function(a, b) { return a !== b && !(a.id / 1000 ^ b.id / 1000); }))
+  //     .attr("class", "county-boundary")
+  //     .attr("d", path);
+
+  svg.insert("path", ".graticule")
+      .datum(topojson.mesh(us, us.objects.states, function(a, b) { return a !== b; }))
+      .attr("class", "state-boundary")
+      .attr("d", path);
+});
+
+d3.select(self.frameElement).style("height", h + "px");
+
+var states = svg.append("svg:g")
+    .attr("id", "states");
+
+var circles = svg.append("svg:g")
+    .attr("id", "circles");
+
+var cells = svg.append("svg:g")
+    .attr("id", "cells");
+    // .on("click", function(d) {
+ 
+    //                   d3.select(this)
+    //                   .style("background", "red")
+    //                   .style("color", "white");
+    //                   console.log("Success");
+    //             });  
+
+
+
+d3.select("input[type=checkbox]").on("change", function() {
+  cells.classed("voronoi", this.checked);
+});
+
+// d3.json("us-states.json", function(collection) {
+//   states.selectAll("path")
+//       .data(collection.features)
+//     .enter().append("svg:path")
+//       .attr("d", path);
+// });
+
+d3.csv("flights-airport_all.csv", function(flights) {
+  
+  var linksByOrigin = {},
+      countByAirport = {},
+      cancelledByAirport = {},
+      locationByAirport = {},
+      Airport_count = {},
+      Cancelled_count = {},
+      positions = [],
+
+      data_series_1 = {},
+
+      ListByAirline = {
+        'AA' : [],
+        'AS' : [],
+        'B6' : [],
+        'DL' : [],
+        'EV' : [],
+        'F9' : [],
+        'MQ' : [],
+        'OO' : [],
+        'UA' : [],
+        'US' : [],
+        'VX' : [],
+        'WN' : []
+      };    
+
+      // ListByAirline = {
+
+      //   "origin" :
+      //   [['AA'],
+      //   ['AS'],
+      //   ['B6'],
+      //   ['DL'],
+      //   ['EV'],
+      //   ['F9'],
+      //   ['MQ'],
+      //   ['OO'],
+      //   ['UA'],
+      //   ['US'],
+      //   ['VX'],
+      //   ['WN']
+      //   ]
+      // };
+
+      
+
+
+
+
+  var arc = d3.geo.greatArc()
+      .source(function(d) { return locationByAirport[d.source]; })
+      .target(function(d) { return locationByAirport[d.target]; });
+
+
+
+  flights.forEach(function(flight) {
+    var origin = flight.origin,
+        destination = flight.destination,
+        count_airport = +flight.count,
+        cancelled_Airport = +flight.count_cancelled,
+        links = linksByOrigin[origin] || (linksByOrigin[origin] = []);
+    links.push({source: origin, target: destination});
+
+    countByAirport[origin] = (countByAirport[origin] || 0) + 5;
+    countByAirport[destination] = (countByAirport[destination] || 0) + 5;
+
+    Airport_count[origin] = (Airport_count[origin]|| 0)  + count_airport; 
+    Cancelled_count[origin] = (Cancelled_count[origin]|| 0)  + cancelled_Airport;
+
+    var z = "";
+
+    var dest = data_series_1[origin] = {};
+    for (i in ListByAirline) {        
+        z = i + '_count';
+        dest[i] = flight[z];
+    };
+});
+    
+
+
+  d3.csv("airports_2.csv", function(airports) {
+
+
+    // Only consider airports with at least one flight.
+    airports = airports.filter(function(airport) {
+      if (countByAirport[airport.iata]) {
+        var location = [+airport.longitude, +airport.latitude];
+        locationByAirport[airport.iata] = location;
+        positions.push(projection(location)); 
+        return true;
+      }
+
+    });
+
+    // Compute the Voronoi diagram of airports' projected positions.
+    var polygons = d3.geom.voronoi(positions);
+
+    // var perc_canc = (Cancelled_count[d.iata]|| 0) /(Airport_count[origin]|| 0)*100;
+
+
+    var g = cells.selectAll("g")
+        .data(airports)
+      .enter().append("svg:g");
+
+    g.append("svg:path")
+        .attr("class", "cell")
+        .attr("d", function(d, i) { return "M" + polygons[i].join("L") + "Z"; })
+        .on("mouseover", function(d, i) { 
+
+         d3.select("h2 span").text("Airport: " + d.name)
+         // .attr("font-family", "sans-serif")
+         // .attr("font-size", "2px")
+         // .attr("fill", "red")
+         .append("p").text("City: " + d.city)
+         .append("p").text("Flights Count: " + Airport_count[d.iata])
+         .append("p").text("Count Cancelled: " + Cancelled_count[d.iata])
+         .append("p").text("Percentage Cancelled: " + Math.round((+Cancelled_count[d.iata]) /(+Airport_count[d.iata])*100) + "%");
+
+    
+
+
+          })
+        ;
+
+
+
+        
+
+    g.selectAll("path.arc")
+        .data(function(d) { return linksByOrigin[d.iata] || []; })
+      .enter().append("svg:path")
+        .attr("class", "arc")
+        .attr("d", function(d) { return path(arc(d)); });
+
+    circles.selectAll("circle")
+        .data(airports)
+      .enter().append("svg:circle")
+        .attr("cx", function(d, i) { return positions[i][0]; })
+        .attr("cy", function(d, i) { return positions[i][1]; })
+        .attr("r", function(d, i) { return Math.sqrt(countByAirport[d.iata]); })
+        .sort(function(a, b) { return countByAirport[b.iata] - countByAirport[a.iata]; });
+  });
+});
+
+    </script>
+  </body>
+</html>
