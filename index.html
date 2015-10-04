@@ -95,10 +95,9 @@ path.cell {
   <body>
     <h1>   
      <div> <div style="position:absolute;left: 400px;font-family: sans-serif;font-style: normal;font-weight: normal;">
-      
     </h1>
     <h2>
-      <div> <div style="position:absolute;bottom: 20%;left:5%;font-size: 16px;
+      <div> <div style="position:absolute;bottom: 30%;left:5%;font-size: 16px;
         font-family: sans-serif;font-style: normal;font-weight: normal; opacity: 0.7;">
       <span></span>
     </h2>
@@ -109,14 +108,6 @@ path.cell {
       <span></span>
     </h3>
     </div>
-   <!--  <div style="position:absolute;bottom:70px;font-size:18px;">
-      <input type="checkbox" id="voronoi"> <label for="voronoi">Voronoi</label>
-      </div> -->
-
-<!--    <div> <div style="position:absolute;bottom: 100px;right: 150px;font-style: normal;font-weight: normal;">
-   <svg class="chart"></svg>
-    </div>
- -->
     <div id='dashboard' style="position:absolute;bottom: 0px;left: 100px; opacity: 0.9;">
 
     <style>
@@ -153,9 +144,11 @@ path.cell {
 </style>
     </div>
 
-
     <script type="text/javascript">
 
+//Drawiing US Map
+
+// Map dimensions
 var w = 1280,
     h = 800
     opacityCircle = 0.7,
@@ -163,6 +156,7 @@ var w = 1280,
 
 var origin = [-98, 38];
 
+// Projection setup
 var projection = d3.geo.albers()
     .rotate([96, 0])
     .center([-.6, 38.7])
@@ -171,6 +165,7 @@ var projection = d3.geo.albers()
     .translate([w / 2 - 200, h / 2 - 100])
     .precision(.1);
 
+// flight paths
 var path = d3.geo.path()
     .projection(projection);
 
@@ -178,6 +173,7 @@ var graticule = d3.geo.graticule()
     .extent([[-98 - 45, 38 - 45], [-98 + 45, 38 + 45]])
     .step([5, 5]);
 
+// Actual drawing of graticules
 var svg = d3.select("body").append("svg")
     .attr("width", w)
     .attr("height", h);
@@ -201,6 +197,7 @@ d3.json("us.json", function(error, us) {
       .attr("d", path);
 });
 
+// Defining locations
 d3.select(self.frameElement).style("height", h + "px");
 
 var states = svg.append("svg:g")
@@ -213,10 +210,7 @@ var cells = svg.append("svg:g")
     .attr("id", "cells");
 
 
-d3.select("input[type=checkbox]").on("change", function() {
-  cells.classed("voronoi", this.checked);
-});
-
+// Load in flights data
 d3.csv("flights-airport_all.csv", function(flights) {
   
   var linksByOrigin = {},
@@ -235,22 +229,7 @@ d3.csv("flights-airport_all.csv", function(flights) {
       max_delay = {},
       positions = [],
 
-      data_series_1 = {},
-
-      ListByAirline = {
-        'AA' : [],
-        'AS' : [],
-        'B6' : [],
-        'DL' : [],
-        'EV' : [],
-        'F9' : [],
-        'MQ' : [],
-        'OO' : [],
-        'UA' : [],
-        'US' : [],
-        'VX' : [],
-        'WN' : []
-      };    
+      data_series_1 = {};
 
 
   var arc = d3.geo.greatArc()
@@ -258,7 +237,7 @@ d3.csv("flights-airport_all.csv", function(flights) {
       .target(function(d) { return locationByAirport[d.target]; });
 
 
-
+  // assigning flight data to variables
   flights.forEach(function(flight) {
     var origin = flight.origin,
         destination = flight.destination,
@@ -266,6 +245,8 @@ d3.csv("flights-airport_all.csv", function(flights) {
         cancelled_Airport = +flight.count_cancelled,
         diverted_Airport = +flight.count_diverted,
 
+
+        // avergae delays
         arr_delay_airport = +flight.TOTAL_AVG_ARR_DELAY,
         security_delay_airport = +flight.TOTAL_AVG_SECURITY_DELAY,
         weather_delay_airport = +flight.TOTAL_AVG_WEATHER_DELAY,
@@ -273,6 +254,7 @@ d3.csv("flights-airport_all.csv", function(flights) {
         late_aircraft_delay_airport = +flight.TOTAL_AVG_LATE_AIRCRAFT_DELAY,
         carrier_delay_airport = +flight.TOTAL_AVG_CARRIER_DELAY,
 
+        // frequency of delays
         sum_arr_delay_airport = +flight.TOTAL_ARR_DELAY,
         sum_security_delay_airport = +flight.TOTAL_SECURITY_DELAY,
         sum_weather_delay_airport = +flight.TOTAL_WEATHER_DELAY,
@@ -297,6 +279,7 @@ d3.csv("flights-airport_all.csv", function(flights) {
     nas_delay[origin] = (nas_delay[origin]|| 0)  + nas_delay_airport;
     late_aircraft_delay[origin] = (late_aircraft_delay[origin]|| 0)  + late_aircraft_delay_airport;
 
+    //calculate delay with maximum frequency 
     var max_i = Math.max(sum_carrier_delay_airport,sum_weather_delay_airport,sum_security_delay_airport,
       sum_late_aircraft_delay_airport,sum_nas_delay_airport);
     
@@ -311,19 +294,9 @@ d3.csv("flights-airport_all.csv", function(flights) {
     } else { max_delay[origin] = "Late Aircraft";
     }
 
-
-
-
-    var x = "";
-
-    var dest = data_series_1[origin] = {};
-    for (i in ListByAirline) {        
-        x = i + '_count';
-        dest[i] = flight[x];
-    };
 });
     
-
+  // Load airport data
   d3.csv("airports_2.csv", function(airports) {
 
 
@@ -356,17 +329,9 @@ d3.csv("flights-airport_all.csv", function(flights) {
          .append("p").text(d.name).style("font-size", "18px")
          .append("p").text(d.city + ", " + d.state)
          .append("p").text("Flights: " + Airport_count[d.iata]);
-         // .append("p").text("Flights Cancelled: " + Cancelled_count[d.iata])
-         // .append("p").text("Flights Diverted: " + Diverted_count[d.iata])
-         // .append("p").text("Percentage Cancelled: " + Math.round((+Cancelled_count[d.iata]) /(+Airport_count[d.iata])*100) + "%")
-         // .append("p").text("Avg Carrier Delay: " + Math.round(carrier_delay[d.iata]) + " min")
-         // .append("p").text("Avg Weather Delay: " + Math.round(weather_delay[d.iata]) + " min")         
-         // .append("p").text("Avg Security Delay: " + Math.round(sec_delay[d.iata]) + " min")
-         // .append("p").text("Avg Late Arrival Delay: " + Math.round(arr_delay[d.iata]) + " min")
-         // .append("p").text("Avg National Air System Delay: " + Math.round(nas_delay[d.iata]) + " min")
-         // .append("p").text("Avg Late Aircraft Delay: " + Math.round(late_aircraft_delay[d.iata]) + " min");
          
 
+        // Call function to update bar chart 
         updateBarChart(d, i);
       
 
@@ -420,7 +385,7 @@ d3.csv("flights-airport_all.csv", function(flights) {
                   .attr('opacity', opacityCircle);
 
 
-
+// umbrella function to create bar chart
 function dashboard(id, fData){
     var barColor = 'steelblue';
     function segColor(c){ return {Normal:"#807dba", Cancelled:"#e08214",Diverted:"#41ab5d"}[c]; }
@@ -540,7 +505,8 @@ var freqData = [
 
 
 dashboard('#dashboard',freqData);
-
+  
+ // function to update bar chart data 
  function updateBarChart(d, i) {
 
             fD = [
