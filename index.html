@@ -239,60 +239,63 @@ d3.csv("flights-airport_all.csv", function(flights) {
 
   // assigning flight data to variables
   flights.forEach(function(flight) {
-    var origin = flight.origin,
-        destination = flight.destination,
-        count_airport = +flight.count,
-        cancelled_Airport = +flight.count_cancelled,
-        diverted_Airport = +flight.count_diverted,
+  var origin = flight.origin,
+      destination = flight.destination,
+      count_airport = +flight.count,
+      cancelled_Airport = +flight.count_cancelled,
+      diverted_Airport = +flight.count_diverted,
 
 
-        // avergae delays
-        arr_delay_airport = +flight.TOTAL_AVG_ARR_DELAY,
-        security_delay_airport = +flight.TOTAL_AVG_SECURITY_DELAY,
-        weather_delay_airport = +flight.TOTAL_AVG_WEATHER_DELAY,
-        nas_delay_airport = +flight.TOTAL_AVG_NAS_DELAY,
-        late_aircraft_delay_airport = +flight.TOTAL_AVG_LATE_AIRCRAFT_DELAY,
-        carrier_delay_airport = +flight.TOTAL_AVG_CARRIER_DELAY,
+      // assigning average delay fields
+      arr_delay_airport = +flight.TOTAL_AVG_ARR_DELAY,
+      security_delay_airport = +flight.TOTAL_AVG_SECURITY_DELAY,
+      weather_delay_airport = +flight.TOTAL_AVG_WEATHER_DELAY,
+      nas_delay_airport = +flight.TOTAL_AVG_NAS_DELAY,
+      late_aircraft_delay_airport = +flight.TOTAL_AVG_LATE_AIRCRAFT_DELAY,
+      carrier_delay_airport = +flight.TOTAL_AVG_CARRIER_DELAY,
 
-        // frequency of delays
-        sum_arr_delay_airport = +flight.TOTAL_ARR_DELAY,
-        sum_security_delay_airport = +flight.TOTAL_SECURITY_DELAY,
-        sum_weather_delay_airport = +flight.TOTAL_WEATHER_DELAY,
-        sum_nas_delay_airport = +flight.TOTAL_NAS_DELAY,
-        sum_late_aircraft_delay_airport = +flight.TOTAL_LATE_AIRCRAFT_DELAY,
-        sum_carrier_delay_airport = +flight.TOTAL_CARRIER_DELAY,
+      // assigning frequency of delays (counts)
+      sum_arr_delay_airport = +flight.TOTAL_ARR_DELAY,
+      sum_security_delay_airport = +flight.TOTAL_SECURITY_DELAY,
+      sum_weather_delay_airport = +flight.TOTAL_WEATHER_DELAY,
+      sum_nas_delay_airport = +flight.TOTAL_NAS_DELAY,
+      sum_late_aircraft_delay_airport = +flight.TOTAL_LATE_AIRCRAFT_DELAY,
+      sum_carrier_delay_airport = +flight.TOTAL_CARRIER_DELAY,
 
-        links = linksByOrigin[origin] || (linksByOrigin[origin] = []);
-    links.push({source: origin, target: destination});
+      links = linksByOrigin[origin] || (linksByOrigin[origin] = []);
+      links.push({source: origin, target: destination});
 
-    countByAirport[origin] = (countByAirport[origin] || 0) + 5;
-    countByAirport[destination] = (countByAirport[destination] || 0) + 5;
+  // counting flights at airport location for circle size
+  countByAirport[origin] = (countByAirport[origin] || 0) + 5;
+  countByAirport[destination] = (countByAirport[destination] || 0) + 5;
 
-    Airport_count[origin] = (Airport_count[origin]|| 0)  + count_airport; 
-    Cancelled_count[origin] = (Cancelled_count[origin]|| 0)  + cancelled_Airport;
-    Diverted_count[origin] = (Diverted_count[origin]|| 0)  + diverted_Airport;
+  // getting counts for flights, cancellations, divereted
+  Airport_count[origin] = (Airport_count[origin]|| 0)  + count_airport; 
+  Cancelled_count[origin] = (Cancelled_count[origin]|| 0)  + cancelled_Airport;
+  Diverted_count[origin] = (Diverted_count[origin]|| 0)  + diverted_Airport;
 
-    arr_delay[origin] = (arr_delay[origin]|| 0)  + arr_delay_airport;
-    sec_delay[origin] = (sec_delay[origin]|| 0)  + security_delay_airport;
-    weather_delay[origin] = (weather_delay[origin]|| 0)  + weather_delay_airport;
-    carrier_delay[origin] = (carrier_delay[origin]|| 0)  + carrier_delay_airport;
-    nas_delay[origin] = (nas_delay[origin]|| 0)  + nas_delay_airport;
-    late_aircraft_delay[origin] = (late_aircraft_delay[origin]|| 0)  + late_aircraft_delay_airport;
+  // calulating average delays per airport
+  arr_delay[origin] = (arr_delay[origin]|| 0)  + arr_delay_airport;
+  sec_delay[origin] = (sec_delay[origin]|| 0)  + security_delay_airport;
+  weather_delay[origin] = (weather_delay[origin]|| 0)  + weather_delay_airport;
+  carrier_delay[origin] = (carrier_delay[origin]|| 0)  + carrier_delay_airport;
+  nas_delay[origin] = (nas_delay[origin]|| 0)  + nas_delay_airport;
+  late_aircraft_delay[origin] = (late_aircraft_delay[origin]|| 0)  + late_aircraft_delay_airport;
 
-    //calculate delay with maximum frequency 
-    var max_i = Math.max(sum_carrier_delay_airport,sum_weather_delay_airport,sum_security_delay_airport,
-      sum_late_aircraft_delay_airport,sum_nas_delay_airport);
-    
-    if (sum_carrier_delay_airport >= max_i) {
-      max_delay[origin] = "Carrier";
-    } else if (sum_weather_delay_airport >= max_i) {
-      max_delay[origin] = "Weather";
-    } else if (sum_nas_delay_airport >= max_i) {
-      max_delay[origin] = "National Air System";
-    } else if (sum_security_delay_airport >= max_i) {
-      max_delay[origin] = "Security";
-    } else { max_delay[origin] = "Late Aircraft";
-    }
+  //calculate delay with maximum frequency 
+  var max_i = Math.max(sum_carrier_delay_airport,sum_weather_delay_airport,sum_security_delay_airport,
+    sum_late_aircraft_delay_airport,sum_nas_delay_airport);
+  
+  if (sum_carrier_delay_airport >= max_i) {
+    max_delay[origin] = "Carrier";
+  } else if (sum_weather_delay_airport >= max_i) {
+    max_delay[origin] = "Weather";
+  } else if (sum_nas_delay_airport >= max_i) {
+    max_delay[origin] = "National Air System";
+  } else if (sum_security_delay_airport >= max_i) {
+    max_delay[origin] = "Security";
+  } else { max_delay[origin] = "Late Aircraft";
+  }
 
 });
     
