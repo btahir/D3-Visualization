@@ -12,6 +12,19 @@ The visualization is based on flights to and from the Virginia area and so it ma
 
 The average delays also tend to be correlated with the number of flights at a particular airport. This makes intuitive sense as there is more likelihood of a delay happening over a bigger number of flights - however the average tends to go up with the number which can be attributable to really long delays skewing the average. Late Aircraft and Carrier Delays tend to be the longest on average with Security and Weather Delays being on the lower end.
 
+### Design Development
+
+Since I was a part of a team that was to present a dashboard of visualizations, I focused on one particular aspect of the data i.e. the aiports. My visual would focus on showing data based on airports which would complement the other visualizations which would focus on information based on the actual flight.
+
+My goal was to group the information by airports and show how they stack up against each other. I had a variety of metrics such as flight counts, cancellations, types of delays etc. to choose from. 
+
+I decided to show the information on a US map in case there were any geographical patterns (east coast v west coast) that would pop out. I was inspried by Mike Bostock's flight patterns map example: <https://mbostock.github.io/d3/talk/20111116/airports.html> 
+and wanted to show a similar map where you can see the different flight paths based on hovering on the airport of choice. 
+
+I wanted to add to this by showing some information about the airport (flight counts, delays etc.) and it made sense to add this to the hovering event. I initially showed this information as text (indexOld2.html) but later changed this partially to a bar chart so the reader can more easily compare the various types of delays.
+
+Another changed I ended up making was to add a color legend which categorized the airports by the most frequent delay. I thought this visual information blended nicely with the average delay times already being shown in the bar chart.
+
 ### Process
 
 My goal was to look at the flight information based on airport and see how the data (cancellations/delays) varied based on airport. I decided I wanted to lay out the data on an actual US map to understand the geographical spread of the data. 
